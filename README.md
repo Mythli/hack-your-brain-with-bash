@@ -6,7 +6,7 @@ It is the result of living a productive life as programmer with ADHS. Trust me, 
 
 ![Hack Your Brain with Bash: Program Your Habits](resources/hack.gif)
 
-## Ready commands
+## Ready modes
 - **Zen Mode**: `hack switch zen` - Blocks everythign distracting
 - **News Timer**: `hack switch news` - Solve challenges and get some news & social media time
 - **Work Mode**: `hack switch work` - Unblocks all work related messengers
