@@ -460,9 +460,15 @@ switch_mode_cli() {
 
 # Function to edit the script
 edit_script_cli() {
+        # accept an editor as parameter 1 if nothing specified try to find an editor by the below list
+        local editor="${1}"
         local editors=("subl" "vim" "vi" "emacs")
+        if [[ -n "$editor" ]] && command -v "$editor" &> /dev/null; then
+                "$editor" "$0"
+                return
+        fi
         for editor in "${editors[@]}"; do
-                if command -v "$editor" "$script_dir/hack.sh" &> /dev/null; then
+                if command -v "$editor" &> /dev/null; then
                         "$editor" "$0"
                         return
                 fi
@@ -534,7 +540,7 @@ main() {
             print_mode_cli "$2"
             ;;
         edit)
-            edit_script_cli
+            edit_script_cli "$2"
             ;;
         *)
             echo "Invalid command: $command"
@@ -543,7 +549,7 @@ main() {
             echo "  switch [mode_name] [duration] - Switch to a specific mode with an optional duration."
             echo "  list - List all available modes."
             echo "  print [mode_name] - Print the configuration of a specific mode."
-            echo "  hack - hack the script using a suitable text editor."
+            echo "  edit [editor] - hack the script using a text editor"
             ;;
     esac
 }
