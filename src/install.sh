@@ -154,7 +154,7 @@ install() {
   cp "$parent_dir/hack.sample.sh" "$parent_dir/hack.sh"
   chmod +x "$parent_dir/hack.sh"
   add_alias "$parent_dir/hack.sh"
-  "$parent_dir/hack.sh"
+  echo "Run hack edit to start hacking your brain!"
 }
 
 install

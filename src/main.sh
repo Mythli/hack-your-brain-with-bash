@@ -462,7 +462,7 @@ switch_mode_cli() {
 edit_script_cli() {
         local editors=("subl" "vim" "vi" "emacs")
         for editor in "${editors[@]}"; do
-                if command -v "$editor" "$script_dir" &> /dev/null; then
+                if command -v "$editor" "$script_dir/hack.sh" &> /dev/null; then
                         "$editor" "$0"
                         return
                 fi
