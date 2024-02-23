@@ -4,6 +4,23 @@ declare -g script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && 
 declare -g parent_dir="$( cd "$script_dir/.." &> /dev/null && pwd )"
 declare -g script_path=$(realpath "$0")
 
+make_host_file_writeable() {
+  local hosts_file="/etc/hosts"
+  if [ -w "$hosts_file" ]; then
+    echo "The current user can write to the hosts file."
+  else
+    echo "Write permission to the hosts file is mandatory."
+    read -p "Do you want to grant write permission to the hosts file? (y/N) " response
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+      sudo chmod a+w "$hosts_file"
+      echo "Write permission granted to the hosts file."
+    else
+      echo "Write permission not granted. Exiting."
+      exit 1
+    fi
+  fi
+}
+
 check_and_provide_install_commands() {
     local missing_tools=0
     local tools=(
@@ -153,6 +170,7 @@ add_alias() {
 install() {
   cp "$parent_dir/hack.sample.sh" "$parent_dir/hack.sh"
   chmod +x "$parent_dir/hack.sh"
+  make_host_file_writeable
   add_alias "$parent_dir/hack.sh"
   echo "Run hack edit to start hacking your brain!"
 }

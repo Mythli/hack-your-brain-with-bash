@@ -15,8 +15,8 @@ It is the result of living a productive life as programmer with ADHS. Trust me, 
 ## Atomic Habits Principles
 This script is a practical application of the principles from "Atomic Habits":
 
-- **Cue Elimination**: Zen Mode removes the triggers of bad habits.
-- **Increase friction of bad habits**: Default to Zen simplifies maintaining focus and having to complete challenges increases the friction of bad habits.
+- **Cue Elimination**: Zen Mode removes the triggers of bad habits and lets you focus on the task at hand.
+- **Increase friction of bad habits**: In order to access social media and instant messages you get to complete challenges first
 - **Make good habits easy**: The script always brings you back to zen so being in the flow without distractions becomes your new normal. 
 - **Identity Reinforcement**: Each use is a vote for the person you're becoming.
   "Every action you take is a vote for the type of person you wish to become." – James Clear
@@ -52,7 +52,7 @@ This script is a practical application of the principles from "Atomic Habits":
 - Customize with `hack edit` to block any app or site.
 - Comes with over 50,000 distracting domain names which you can use
 - Comes with 3 challenge types: Mantra completion, Math and physical exercises.
-- Modify challenges and rewards to fit your goals.
+- Hack challenges and rewards to fit your goals. The sky is the limit.
 
 "Habits are the compound interest of self-improvement." – James Clear
 
