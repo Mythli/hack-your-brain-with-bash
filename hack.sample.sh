@@ -130,4 +130,3 @@ plank() {
 
 source "$script_dir/src/main.sh"
 main "$@"
-
