@@ -2,6 +2,8 @@
 
 Inspired by James Clear's "Atomic Habits," this hackable Bash script is your toolkit for programming your brain to build better habits.
 
+It is the result of living a productive life as programmer with ADHS.
+
 ## Commands
 
 - **Zen Mode**: `hack switch zen` - Blocks out the digital clutter.
