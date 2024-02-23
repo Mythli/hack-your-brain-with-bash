@@ -23,29 +23,72 @@ make_host_file_writeable() {
 
 check_and_provide_install_commands() {
     local missing_tools=0
-    local tools="bc awk sleep kill pgrep grep printf screen sed"
+    local tools=(
+        "bc"
+        "awk"
+        "sleep"
+        "kill"
+        "pgrep"
+        "grep"
+        "printf"
+        "screen"
+        "sed"
+    )
+
+    # Check for Bash version 4 or higher
+    if [ "${BASH_VERSINFO:-0}" -lt 4 ]; then
+        echo "Error: Bash version 4 or higher is required." >&2
+        missing_tools=1
+    fi
+
+    # Detect package manager and prepare installation commands
+    local pkg_manager
+    local bash_install_command
+    if command -v apt-get &> /dev/null; then
+        pkg_manager="sudo apt-get install"
+        bash_install_command="sudo apt-get install --only-upgrade bash"
+    elif command -v yum &> /dev/null; then
+        pkg_manager="sudo yum install"
+        bash_install_command="sudo yum update bash"
+    elif command -v dnf &> /dev/null; then
+        pkg_manager="sudo dnf install"
+        bash_install_command="sudo dnf upgrade bash"
+    elif command -v pacman &> /dev/null; then
+        pkg_manager="sudo pacman -S"
+        bash_install_command="sudo pacman -S bash"
+    elif command -v zypper &> /dev/null; then
+        pkg_manager="sudo zypper install"
+        bash_install_command="sudo zypper up bash"
+    elif command -v brew &> /dev/null; then
+        pkg_manager="brew install"
+        bash_install_command="brew install bash"
+    else
+        echo "Error: No known package manager found. Please install the missing tools manually." >&2
+        return 1
+    fi
 
     # Check for required tools
-    for tool in $tools; do
+    for tool in "${tools[@]}"; do
         if ! command -v "$tool" &> /dev/null; then
             echo "Error: Required tool '$tool' is not installed." >&2
+            echo "To install '$tool', run: $pkg_manager $tool" >&2
             missing_tools=1
         fi
     done
 
+    # If Bash is outdated, provide the installation or update command
+    if [ "${BASH_VERSINFO:-0}" -lt 4 ] && [ -n "$bash_install_command" ]; then
+        echo "To install or update Bash, run: $bash_install_command" >&2
+    fi
+
     if [ "$missing_tools" -ne 0 ]; then
-        echo "One or more required tools are missing." >&2
+        echo "One or more required tools are missing or outdated." >&2
         return 1
     fi
 
-    echo "All required tools are installed."
+    echo "All required tools are installed and Bash is up to date."
     return 0
 }
-
-# Example usage:
-if ! check_and_provide_install_commands; then
-    exit 1
-fi
 
 detect_shell_config() {
   # Determine the operating system
@@ -120,6 +163,9 @@ add_alias() {
 }
 
 install() {
+  if ! check_and_provide_install_commands; then
+      exit 1
+  fi
   cp "$parent_dir/hack.sample.sh" "$parent_dir/hack.sh"
   chmod +x "$parent_dir/hack.sh"
   make_host_file_writeable
