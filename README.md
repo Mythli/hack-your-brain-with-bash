@@ -21,7 +21,7 @@ This script is a practical application of the principles from "Atomic Habits":
 - **Identity Reinforcement**: Each use is a vote for the person you're becoming.
   "Every action you take is a vote for the type of person you wish to become." – James Clear
 
-## Installation
+## Installation & commands
 1. Install the script:
    ```bash
    curl -sL https://raw.githubusercontent.com/Mythli/hack-your-brain-with-bash/main/src/download.sh | bash
