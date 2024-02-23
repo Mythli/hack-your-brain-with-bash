@@ -1,28 +1,44 @@
-# Hack Your Brain with Bash
-Bash script designed to automate your discipline. It's simple: make good habits inevitable and bad habits difficult. Inspired by the book "Atomic Habits" from James Clear.
+# Hack Your Brain with Bash: Program Your Habits
 
-## Philosophy
-"Your habits shape your identity, and your identity shapes your habits." – James Clear
+Inspired by James Clear's "Atomic Habits," this hackable Bash script is your toolkit for programming your brain to build better habits.
 
-This script is a practical application of that concept. It's not just about blocking sites; it's about reinforcing the identity you want to build. Every challenge completed is a vote for your new self.
+## Commands
 
-Make this script a cornerstone of your daily routine. Let it guide you back to work, away from distractions, and towards the person you aim to be.
+- **Zen Mode**: `hack switch zen` - Blocks out the digital clutter.
+- **News Timer**: `hack switch news` - Earn your news time.
+- **Default Zen**: Keeps you on the path of focus.
+- **Clear Mode**: `clear` - Momentary freedom when needed.
+- **Work Mode**: `hack switch work` - Only the essentials for work.
 
-"Systems are the engines of success. Build a system that makes your good habits the path of least resistance." – James Clear
+## Atomic Habits Principles
 
-Start hacking habits with bash.
+This script is a practical application of the principles from "Atomic Habits":
 
-## Ready to go
-- **Zen Mode Activation**: Launch the script, and your digital space instantly enters Zen Mode. All messengers, social media, and news sites are silenced and unaccessible. 
-- **Controlled News Access**: Crave a news update? Command `hack switch news`, conquer a few challenges—mantras and push-ups—and earn a 10-minute news window. Need more time? Extend to 20 minutes with `hack switch news 20`. But that's your limit; discipline is non-negotiable.
-- **Default to Zen**: The script's bias is towards Zen Mode, nudging you back to a state of undisturbed productivity.
-- **Clear Mode**: For moments requiring unbounded access, `clear` mode lifts all barriers for up to 10 minutes
+- **Cue Elimination**: Zen Mode removes the triggers of bad habits.
+- **Friction**: Default to Zen simplifies maintaining focus and having to complete challenges increases the friction of bad habits.
+- **Identity Reinforcement**: Each use is a vote for the person you're becoming.
+  "Every action you take is a vote for the type of person you wish to become." – James Clear
 
-# Get started
-1. run `` to install it automagically
-2. run `hack switch <mode> <duration>`
+## Installation
 
-## Features
-1. Block apps like games or messengers 
-2. Block websites
-3. Scriptable!
+1. Install the script:
+   ```bash
+   curl -sL https://raw.githubusercontent.com/Mythli/hack-your-brain-with-bash/main/src/download.sh | bash
+   ```
+2. Personalize your habit plan:
+   ```bash
+   hack edit
+   ```
+3. Engage Zen Mode for focus:
+   ```bash
+   hack switch zen
+   ```
+
+## Hackable Features
+- Customize with `hack edit` to block any app or site.
+- Comes with over 50,000 distracting domain names which you can use
+- Modify challenges and rewards to fit your goals.
+
+"Habits are the compound interest of self-improvement." – James Clear
+
+This script is more than a set of commands; it's a customizable system that empowers you to compound your habits effectively. By hacking this script, you're taking control of your habit formation and programming your brain for success. Use it to shape your actions to match the identity of your aspirational self.
