@@ -1,0 +1,11 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!porn
+!gambling
+!social
+
+# ...even if they are in subdirectories
+!*/

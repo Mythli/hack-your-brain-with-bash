@@ -24,7 +24,7 @@ declare -gA news=(
         [default_duration]=10
         [max_duration]=20
         [closed_apps]="${clear[closed_apps]}"
-        [hosts]="app.tandem.net tinder.com etl.tindersparks.com"
+        [hosts]="$(cat "$script_dir/hosts/porn") app.tandem.net tinder.com etl.tindersparks.com"
         [suppressed_apps]=""
         [challenges]="mantra2 pushups"
         # [challenges]="addition1"
@@ -34,7 +34,7 @@ declare -gA work=(
         [default_duration]=-1
         [max_duration]=60
         [closed_apps]="${clear[closed_apps]}"
-        [hosts]="${news[hosts]} twitter.com www.youtube.com api.gotinder.com www.understandingwar.org www.anti-spiegel.ru app.tandem.net nachdenkseiten.de golem.de heise.de youtube.de youtube.com news.ycombinator.com"
+        [hosts]="${news[hosts]} $(cat "$script_dir/hosts/social") www.understandingwar.org app.tandem.net nachdenkseiten.de golem.de heise.de news.ycombinator.com"
         [suppressed_apps]="telegram whatsapp viber"
         [challenges]="addition3 pushups"
 )

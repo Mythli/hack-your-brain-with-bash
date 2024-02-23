@@ -318,7 +318,7 @@ set_mode_hosts() {
 
         # Build the content for the PRIME section of the hosts file
         for host in ${mode[hosts]}; do
-                hosts_content+="127.0.0.1 $host"$'\n'
+                hosts_content+="0.0.0.0 $host"$'\n'
         done
 
         # Call set_hosts_section with the new content
@@ -343,9 +343,6 @@ spawn_suppress_mode_apps() {
 
 spawn_suppress_mode_hosts() {
         local mode_name=$1
-        #local script_path=$(realpath "$0") # Get the full path to the current script
-        # Start a background process using screen to suppress apps for the given mode
-        #screen -dmS "hackbrain___suppress_hosts_$mode_name" bash -c "$script_path suppress_mode_hosts $mode_name"
         set_mode_hosts "$mode_name"
 }
 
@@ -486,6 +483,29 @@ test_system() {
   fi
 }
 
+download_and_sanitise_hosts_cli() {
+  if [ $# -ne 2 ]; then
+    echo "Usage: $0 url output_file"
+    return 1
+  fi
+
+  local url="$1"
+  local output_file="$2"
+  local tmp_file=$(mktemp)
+
+  # Download the content to a temporary file
+  if ! curl -o "$tmp_file" -s "$url"; then
+    echo "Failed to download the file from $url"
+    return 1
+  fi
+
+  # Sanitize the hosts and save to the output file
+  awk '/^0\.0\.0\.0/ {print $2}' "$tmp_file" | tr '\n' ' ' > "$output_file"
+  echo >> "$output_file" # Add a newline at the end of the file
+
+  # Clean up the temporary file
+  rm "$tmp_file"
+}
 # Main CLI logic
 main() {
         test_system
@@ -503,6 +523,9 @@ main() {
                         ;;
                 edit)
                         edit_script_cli
+                        ;;
+                download_and_sanitise_hosts)
+                        download_and_sanitise_hosts_cli "$2" "$3"
                         ;;
                 suppress_mode_hosts)
                         suppress_mode_hosts_cli "$2"
@@ -522,7 +545,7 @@ main() {
                         tail -f "$log_file"
                         ;;
                 *)
-                        echo "Usage: $0 {switch|list|print|edit}"
+                        echo "Usage: hack {switch|list|print|edit}"
                         ;;
         esac
 }
