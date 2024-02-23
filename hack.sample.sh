@@ -36,7 +36,7 @@ declare -gA news=(
         [closed_apps]="${clear[closed_apps]}"
         [hosts]="$(cat "$script_dir/hosts/porn") app.tandem.net tinder.com etl.tindersparks.com"
         [suppressed_apps]=""
-        [challenges]="mantra2 pushups"
+        [challenges]="mantra1 addition2 pushups"
         # [challenges]="addition1"
 )
 
@@ -80,20 +80,20 @@ mantras=(
 # The mantra function presents the user with a challenge to complete a mantra by typing it out.
 # It selects 4 random words from the mantra and asks the user to type the full mantra.
 mantra() {
-        complete_mantra 4 "${mantras[@]}"
+        complete_mantra 2 "${mantras[@]}"
 }
 
 # The mantra2 function is similar to the mantra function but repeats the challenge twice.
 mantra2() {
-        complete_mantra 4 "${mantras[@]}"
-        complete_mantra 4 "${mantras[@]}"
+        complete_mantra 2 "${mantras[@]}"
+        complete_mantra 2 "${mantras[@]}"
 }
 
 # The mantra3 function is similar to the mantra function but repeats the challenge three times.
 mantra3() {
-        complete_mantra 4 "${mantras[@]}"
-        complete_mantra 4 "${mantras[@]}"
-        complete_mantra 4 "${mantras[@]}"
+        complete_mantra 2 "${mantras[@]}"
+        complete_mantra 2 "${mantras[@]}"
+        complete_mantra 2 "${mantras[@]}"
 }
 
 # The addition1 function presents the user with a math challenge to solve an addition problem with 1-digit numbers.

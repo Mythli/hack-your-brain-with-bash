@@ -1,32 +1,28 @@
 # Hack Your Brain with Bash
+Bash script designed to automate your discipline. It's simple: make good habits inevitable and bad habits difficult. Inspired by the book "Atomic Habits" from James Clear.
 
-Welcome to the world of productivity and self-improvement through the power of scripting! Our "Hack Your Brain with Bash" project is designed to help you optimize your workflow, focus on your tasks, and challenge yourself to grow both mentally and physically.
+## Philosophy
+"Your habits shape your identity, and your identity shapes your habits." – James Clear
 
-## What is "Hack Your Brain with Bash"?
+This script is a practical application of that concept. It's not just about blocking sites; it's about reinforcing the identity you want to build. Every challenge completed is a vote for your new self.
 
-This project is a collection of Bash scripts that enable you to create custom modes for different activities such as work, relaxation, or learning. Each mode is tailored with specific restrictions and challenges to help you stay on track and avoid distractions.
+Make this script a cornerstone of your daily routine. Let it guide you back to work, away from distractions, and towards the person you aim to be.
+
+"Systems are the engines of success. Build a system that makes your good habits the path of least resistance." – James Clear
+
+Start hacking habits with bash.
+
+## Ready to go
+- **Zen Mode Activation**: Launch the script, and your digital space instantly enters Zen Mode. All messengers, social media, and news sites are silenced and unaccessible. 
+- **Controlled News Access**: Crave a news update? Command `hack switch news`, conquer a few challenges—mantras and push-ups—and earn a 10-minute news window. Need more time? Extend to 20 minutes with `hack switch news 20`. But that's your limit; discipline is non-negotiable.
+- **Default to Zen**: The script's bias is towards Zen Mode, nudging you back to a state of undisturbed productivity.
+- **Clear Mode**: For moments requiring unbounded access, `clear` mode lifts all barriers for up to 10 minutes
+
+# Get started
+1. run `` to install it automagically
+2. run `hack switch <mode> <duration>`
 
 ## Features
-
-- **Mode Customization**: Define modes with specific settings for app usage, website blocking, and more.
-- **Challenges**: Engage in math problems, physical exercises, or mantra recitations before switching modes.
-- **Productivity Boost**: Block distracting websites and apps to maintain focus.
-- **Self-Improvement**: Incorporate physical and mental exercises into your daily routine.
-
-## How to Use
-
-1. **Define Your Modes**: Customize modes in the script to fit your needs.
-2. **Set Challenges**: Choose challenges that must be completed to enter a mode.
-3. **Switch Modes**: Use the CLI to switch between modes and start focusing.
-
-## Example Modes
-
-- **Work Mode**: Blocks social media, sets a long duration, and requires completion of challenges.
-- **Zen Mode**: Ideal for relaxation with no set duration and minimal distractions.
-- **News Mode**: Allows brief access to news sites with moderate restrictions.
-
-## Get Started
-
-To begin hacking your brain with Bash, clone the repository, customize your modes and challenges, and start using the CLI to control your environment and habits.
-
-Embrace the power of scripting to transform your productivity and self-discipline. Hack your brain with Bash today!
+1. Block apps like games or messengers 
+2. Block websites
+3. Scriptable!

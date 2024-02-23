@@ -508,44 +508,42 @@ download_and_sanitise_hosts_cli() {
 }
 # Main CLI logic
 main() {
-        test_system
+    test_system
 
-        local command=$1
-        case "$command" in
-                switch)
-                        switch_mode_cli "$2" "$3"
-                        ;;
-                list)
-                        list_modes_cli
-                        ;;
-                print)
-                        print_mode_cli "$2"
-                        ;;
-                edit)
-                        edit_script_cli
-                        ;;
-                download_and_sanitise_hosts)
-                        download_and_sanitise_hosts_cli "$2" "$3"
-                        ;;
-                suppress_mode_hosts)
-                        suppress_mode_hosts_cli "$2"
-                        ;;
-                suppress_mode_apps)
-                        suppress_mode_apps_cli "$2"
-                        ;;
-                switch_to_default_mode)
-                        switch_to_default_mode_cli
-                        ;;
-                test)
-                        test_cli
-                        ;;
-                log)
-                        ps aux | grep -i "prime"
-                        cat /etc/hosts
-                        tail -f "$log_file"
-                        ;;
-                *)
-                        echo "Usage: hack {switch|list|print|edit}"
-                        ;;
-        esac
+    local command=$1
+
+    case "$command" in
+        switch)
+            if [[ -z "$2" ]]; then
+                echo "Usage: $0 switch [mode_name] [duration]"
+                echo "  mode_name - The name of the mode to switch to."
+                echo "  duration - Optional duration in minutes for the mode to be active."
+                return
+            fi
+            switch_mode_cli "$2" "$3"
+            ;;
+        list)
+            list_modes_cli
+            ;;
+        print)
+            if [[ -z "$2" ]]; then
+                echo "Usage: $0 print [mode_name]"
+                echo "  mode_name - The name of the mode to print."
+                return
+            fi
+            print_mode_cli "$2"
+            ;;
+        edit)
+            edit_script_cli
+            ;;
+        *)
+            echo "Invalid command: $command"
+            echo "Usage: $0 {switch|list|print|edit} [options]"
+            echo "Commands:"
+            echo "  switch [mode_name] [duration] - Switch to a specific mode with an optional duration."
+            echo "  list - List all available modes."
+            echo "  print [mode_name] - Print the configuration of a specific mode."
+            echo "  hack - hack the script using a suitable text editor."
+            ;;
+    esac
 }
