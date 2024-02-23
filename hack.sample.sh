@@ -44,7 +44,7 @@ declare -gA work=(
         [default_duration]=-1
         [max_duration]=60
         [closed_apps]="${clear[closed_apps]}"
-        [hosts]="${news[hosts]} $(cat "$script_dir/hosts/social") www.understandingwar.org app.tandem.net nachdenkseiten.de golem.de heise.de news.ycombinator.com"
+        [hosts]="${news[hosts]} $(cat "$script_dir/hosts/social") www.understandingwar.org app.tandem.net nachdenkseiten.de www.nachdenkseiten.de golem.de heise.de news.ycombinator.com blog.fefe.de"
         [suppressed_apps]="telegram whatsapp viber"
         [challenges]="addition3 pushups"
 )

@@ -542,6 +542,15 @@ main() {
         edit)
             edit_script_cli "$2"
             ;;
+        suppress_mode_apps)
+            suppress_mode_apps_cli "$2"
+            ;;
+        switch_to_default_mode)
+            switch_to_default_mode_cli
+            ;;
+        download_and_sanitise_hosts_cli)
+            download_and_sanitise_hosts_cli "$2" "$3"
+            ;;
         *)
             echo "Invalid command: $command"
             echo "Usage: $0 {switch|list|print|edit} [options]"
