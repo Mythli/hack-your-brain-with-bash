@@ -426,12 +426,18 @@ switch_to_default_mode_cli() {
 
 # Function to switch to a specific mode
 switch_mode() {
+    # TODO: fix bug in the code for normalisation where -1 is considered to be smaller than the max duration but is actually higher because we consider it to mean forever
     local mode_name=${1:-$default_mode}
     local -n mode_ref=$mode_name
     local duration=${2:-${mode_ref[default_duration]}}
 
     if declare -p mode_ref &> /dev/null; then
-        if [[ $duration -eq -1 ]] || ([[ $duration -gt 0 ]] && [[ $duration -le ${mode_ref[max_duration]} ]]); then
+        # Normalize the duration
+       if [[ $duration -gt ${mode_ref[max_duration]} ]] || [[ $duration -eq -1 ]]; then
+           duration=${mode_ref[max_duration]}
+       fi
+
+        if [[ $duration -eq -1 ]] || [[ $duration -gt 0 ]]; then
             if execute_function_string "${mode_ref[challenges]}"; then
                 execute_mode $mode_name
 
