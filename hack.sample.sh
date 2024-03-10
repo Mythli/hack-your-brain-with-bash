@@ -36,17 +36,18 @@ declare -gA news=(
         [closed_apps]="${clear[closed_apps]}"
         [hosts]="$(cat "$script_dir/hosts/porn") app.tandem.net tinder.com etl.tindersparks.com"
         [suppressed_apps]=""
-        [challenges]="mantra1 addition2 pushups"
-        # [challenges]="addition1"
+        [challenges]="mantra2 addition3 pushups"
+#        [challenges]="addition1"
 )
 
 declare -gA work=(
         [default_duration]=-1
         [max_duration]=60
         [closed_apps]="${clear[closed_apps]}"
-        [hosts]="${news[hosts]} $(cat "$script_dir/hosts/social") www.understandingwar.org app.tandem.net nachdenkseiten.de www.nachdenkseiten.de golem.de heise.de news.ycombinator.com blog.fefe.de"
+        [hosts]="${news[hosts]} $(cat "$script_dir/hosts/social") www.youtube.com blog.fefe.de www.understandingwar.org app.tandem.net nachdenkseiten.de golem.de heise.de news.ycombinator.com"
         [suppressed_apps]="telegram whatsapp viber"
-        [challenges]="addition3 pushups"
+        [challenges]=""
+        #[challenges]="addition3 pushups"
 )
 
 declare -gA zen=(
