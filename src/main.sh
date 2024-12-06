@@ -229,7 +229,7 @@ close_app() {
         for pid in $pids; do
             if [ "$pid" != "$own_pid" ] && kill -0 $pid 2>/dev/null; then
                 log "Attempting to close PID $pid of $app gracefully..."
-                kill -15 $pid 2>/dev/null
+                sudo kill -15 $pid 2>/dev/null
             fi
         done
 
@@ -240,7 +240,7 @@ close_app() {
         for pid in $pids; do
             if [ "$pid" != "$own_pid" ] && kill -0 $pid 2>/dev/null; then
                 log "PID $pid of $app did not close gracefully, forcing shutdown..."
-                kill -9 $pid 2>/dev/null
+                sudo kill -9 $pid 2>/dev/null
             else
                 log "PID $pid of $app closed successfully."
             fi
@@ -314,8 +314,6 @@ set_mode_hosts() {
         local -n mode=$mode_name
         local hosts_content=""
 
-        log "$(cat /etc/hosts)"
-
         # Build the content for the PRIME section of the hosts file
         for host in ${mode[hosts]}; do
                 hosts_content+="0.0.0.0 $host"$'\n'
@@ -325,12 +323,42 @@ set_mode_hosts() {
         replace_in_markers "/etc/hosts" "PRIME_HOSTS" "$hosts_content"
 }
 
+# Declare global variables
+suppress_events=false
+should_hash=""
+
 suppress_mode_hosts_cli() {
-        local mode_name=$1
-        while true; do
-                set_mode_hosts "$mode_name"
-                sleep 10
-        done
+    local mode_name=$1
+
+    set_mode_hosts "$mode_name"
+
+    should_hash=$(md5sum /etc/hosts | awk '{print $1}')
+
+    fswatch -0 /etc/hosts | while read -d "" event; do
+        if [ "$suppress_events" = true ]; then
+            # Skip handling the event if suppression is active
+            continue
+        fi
+
+        # Calculate the current hash of the file
+        local current_hash
+        current_hash=$(md5sum /etc/hosts | awk '{print $1}')
+
+        echo "${current_hash} VS (SHOULD) ${should_hash}"
+
+        # Check if the hash is the same as the last recorded hash
+        if [ "$current_hash" = "$should_hash" ]; then
+            echo "No changes detected in /etc/hosts. Skipping."
+            continue
+        fi
+
+        echo "Detected change in /etc/hosts. Hash: $current_hash"
+
+        # Suppress further events while making changes
+        suppress_events=true
+        set_mode_hosts "$mode_name"
+        suppress_events=false
+    done
 }
 
 spawn_suppress_mode_apps() {
@@ -338,12 +366,26 @@ spawn_suppress_mode_apps() {
 
         local mode_name=$1
         # Start a background process using screen to suppress hosts for the given mode
-        screen -dmS "hackbrain___suppress_apps_$mode_name" bash -c "$script_path suppress_mode_apps $mode_name"
+        sudo screen -dmS "hackbrain___suppress_apps_$mode_name" bash -c "$script_path suppress_mode_apps $mode_name"
 }
 
 spawn_suppress_mode_hosts() {
         local mode_name=$1
+
         set_mode_hosts "$mode_name"
+        sudo screen -dmS "hackbrain___suppress_hosts$mode_name" bash -c "$script_path suppress_mode_hosts $mode_name"
+}
+
+create_random_file() {
+    local file_name="ids"
+    # Generate a random value
+    local random_value=$RANDOM
+
+    # Create the file with the random value
+    echo "$random_value" > "$script_path/$file_name"
+
+    # Print a success message
+    echo "File created at $script_path/$file_name with random value: $random_value"
 }
 
 execute_mode() {
@@ -352,6 +394,8 @@ execute_mode() {
         local mode_name=$1
         local -n mode=$mode_name
         reset_modes
+
+
 
         log "execute_mode close_mode_apps"
         close_mode_apps "$mode_name" "closed_apps"
@@ -550,6 +594,9 @@ main() {
             ;;
         suppress_mode_apps)
             suppress_mode_apps_cli "$2"
+            ;;
+        suppress_mode_hosts)
+            suppress_mode_hosts_cli "$2"
             ;;
         switch_to_default_mode)
             switch_to_default_mode_cli
