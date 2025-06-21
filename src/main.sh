@@ -271,8 +271,6 @@ replace_in_markers() {
     local content="$3"
     local start_marker="START ${marker}"
     local end_marker="END ${marker}"
-    local in_block=false
-    local new_content=()
 
     # Check if the file exists
     if [ ! -f "$file_path" ]; then
@@ -280,46 +278,68 @@ replace_in_markers() {
         return 1
     fi
 
-    # Read the file line by line and construct new content
+    local tmp_file
+    tmp_file=$(mktemp)
+    # Ensure temp file is removed on exit, interrupt, or termination
+    trap 'rm -f "$tmp_file"' EXIT INT TERM
+
+    local in_block=false
+    local start_marker_found=false
+
+    # Read the file line by line and write to temp file
     while IFS= read -r line; do
         if [[ $line == "$start_marker" ]]; then
             in_block=true
-            new_content+=("$line")
-            new_content+=("$content")
+            start_marker_found=true
+            printf "%s\n" "$line" >> "$tmp_file"
+            # content may be empty, and if not, it should have its own newlines.
+            if [ -n "$content" ]; then
+                # The content already contains newlines for each entry.
+                # We print it as is.
+                printf "%s" "$content" >> "$tmp_file"
+            fi
         elif [[ $line == "$end_marker" ]]; then
             in_block=false
-            new_content+=("$line")
+            printf "%s\n" "$line" >> "$tmp_file"
         else
             if ! $in_block; then
-                new_content+=("$line")
+                printf "%s\n" "$line" >> "$tmp_file"
             fi
         fi
     done < "$file_path"
 
-    # Check if the markers were found, if not, append them
-    if ! grep -q "$start_marker" "$file_path"; then
-        new_content+=("$start_marker")
-        new_content+=("$content")
-    fi
-    if ! grep -q "$end_marker" "$file_path"; then
-        new_content+=("$end_marker")
+    # If markers were not found, append the whole block to the temp file.
+    if ! $start_marker_found; then
+        # Ensure there's a newline before appending the block if file doesn't end with one
+        if [ -s "$file_path" ] && [ "$(tail -c1 "$file_path")" ]; then
+            printf "\n" >> "$tmp_file"
+        fi
+        printf "%s\n" "$start_marker" >> "$tmp_file"
+        if [ -n "$content" ]; then
+            printf "%s" "$content" >> "$tmp_file"
+        fi
+        printf "%s\n" "$end_marker" >> "$tmp_file"
     fi
 
-    # Overwrite the file with the new content
-    printf "%s\n" "${new_content[@]}" > "$file_path"
+    # Overwrite the original file with the temp file.
+    cat "$tmp_file" > "$file_path"
+
+    # Clean up trap and remove temp file
+    trap - EXIT INT TERM
+    rm -f "$tmp_file"
 }
 
 set_mode_hosts() {
         local mode_name=$1
         local -n mode=$mode_name
-        local hosts_content=""
+        local hosts_content
 
-        # Build the content for the PRIME section of the hosts file
-        for host in ${mode[hosts]}; do
-                hosts_content+="0.0.0.0 $host"$'\n'
-        done
+        # Build the content for the PRIME section of the hosts file more efficiently
+        hosts_content=$(for host in ${mode[hosts]}; do
+                echo "0.0.0.0 $host"
+        done)
 
-        # Call set_hosts_section with the new content
+        # Call replace_in_markers with the new content
         replace_in_markers "/etc/hosts" "PRIME_HOSTS" "$hosts_content"
 }
 
