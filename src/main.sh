@@ -61,7 +61,7 @@ generate_math_challenge() {
         fi
 
         # Calculate the correct answer
-        local correct_answer=$(echo "scale=2; $num1 $operator $num2" | bc -l | awk '{printf "%.2f", $0}')
+        local correct_answer=$(echo "scale=2; $num1 $operator $num2" | bc -l | awk '{printf "%.1f", $0}')
 
         # Present the challenge to the user and check for correct answer
         local user_answer
@@ -77,7 +77,7 @@ generate_math_challenge() {
                         continue
                 fi
                 # Normalize user answer for comparison
-                user_answer=$(echo "$user_answer" | awk '{printf "%.2f", $0}')
+                user_answer=$(echo "$user_answer" | awk '{printf "%.1f", $0}')
                 if (( $(echo "$user_answer == $correct_answer" | bc -l) )); then
                         echo "Correct! Well done."
                         return 0
