@@ -42,8 +42,9 @@ generate_math_challenge() {
 
         # If no operator is specified, pick an operator at random
         if [[ -z "$operator" ]]; then
-                echo "Error: operator must be specified."
-                return 1
+                local ops=("+" "-" "*" "/")
+                local rand_idx=$(random_number 0 3)
+                operator=${ops[$rand_idx]}
         fi
 
         # Generate random numbers based on the number of digits
