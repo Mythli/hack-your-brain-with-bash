@@ -3,3 +3,4 @@ hack.sh
 .prime.debug.log
 hack.sh
 .DS_Store
+.aider*
