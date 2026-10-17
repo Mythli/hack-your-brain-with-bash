@@ -176,6 +176,29 @@ execute_mode() {
     runtime_locked activate_mode_locked "$1" "${2:--1}"
 }
 
+# Startup must not extend a break, discard live allowances, or create a second
+# worker. State deadlines are absolute, so time spent powered off still counts.
+resume_mode_locked() {
+    local now
+    now=$(date +%s)
+    if ! read_runtime_state || (( mode_deadline > 0 && now >= mode_deadline )); then
+        valid_mode "$default_mode" || { echo 'Invalid default mode.' >&2; return 1; }
+        activate_mode_locked "$default_mode" -1
+        return
+    fi
+    if [[ ! -f $HACK_STATE_DIR/allow.tsv ]]; then
+        : > "$HACK_STATE_DIR/allow.tsv" || return 1
+    fi
+    set_mode_hosts "$active_mode" "$active_session" "$now" || return 1
+    stop_legacy_workers
+    spawn_mode_worker "$active_mode" "$active_session"
+}
+
+resume_cli() {
+    runtime_requirements || return 1
+    runtime_locked resume_mode_locked
+}
+
 switch_to_default_mode_cli() {
     execute_mode "$default_mode" -1
 }

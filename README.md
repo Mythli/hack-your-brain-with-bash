@@ -107,10 +107,20 @@ Dependencies: Bash 4.3+, `fswatch`, `screen`, and `flock` (Linux) or `shlock`
 (included on macOS), in addition to the original math utilities. On macOS,
 install the watcher with `brew install fswatch` if needed. Existing installations
 start the new worker on their next `hack switch`. Runtime state lives in the
-ignored `.hack-state/` directory. This retains the existing `screen` lifecycle:
-it survives closing a terminal, but is not a login/boot service. After a reboot,
-run `hack switch` to resume enforcement. `hack allow` also restarts a missing
-worker for a recorded, unexpired mode before granting an exception.
+ignored `.hack-state/` directory. Workers survive closing a terminal.
+`hack resume` starts enforcement after login or reboot: it preserves an unexpired
+mode, its original deadline, and live allowances, or starts the default mode if
+there is no valid mode or its deadline has passed. Repeated calls reuse the
+existing worker. `hack allow` also restarts a missing worker for a recorded,
+unexpired mode before granting an exception.
+
+For automatic startup, invoke `bash /absolute/path/to/hack.sh resume` from a
+macOS LaunchAgent (`RunAtLoad` and `AbandonProcessGroup` enabled) or a systemd user
+service (`Type=oneshot`, `RemainAfterExit=yes`, enabled for `default.target`).
+Use an explicit PATH containing Bash 4.3+ and fswatch; Homebrew tools are normally
+under `/opt/homebrew/bin` on Apple Silicon. On Linux, `loginctl enable-linger`
+for the installing user starts the user service at boot and keeps it alive
+after logout. These services are configured separately from the installer.
 
 Hosts changes affect subsequent name resolution; established browser connections
 can remain open. App rules still use whitespace-separated names in the mode

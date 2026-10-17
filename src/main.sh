@@ -340,6 +340,9 @@ main() {
         status)
             status_cli
             ;;
+        resume)
+            resume_cli
+            ;;
         enforce_mode)
             enforce_mode_cli "$2" "$3"
             ;;
@@ -351,11 +354,12 @@ main() {
             ;;
         *)
             echo "Invalid command: $command"
-            echo "Usage: $0 {switch|allow|status|list|print|edit} [options]"
+            echo "Usage: $0 {switch|allow|status|resume|list|print|edit} [options]"
             echo "Commands:"
             echo "  switch [mode_name] [duration] - Switch to a specific mode with an optional duration."
             echo "  allow <substring> [minutes] - Temporarily allow matching blocked hosts/apps."
             echo "  status - Show the active mode and temporary allowances."
+            echo "  resume - Restore enforcement without extending timers (for automatic startup)."
             echo "  list - List all available modes."
             echo "  print [mode_name] - Print the configuration of a specific mode."
             echo "  edit [editor] - hack the script using a text editor"

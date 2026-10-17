@@ -106,6 +106,53 @@ esac
         pending.write_text("".join("\t".join(map(str, row)) + "\n" for row in rows))
         pending.replace(self.state / "allow.tsv")
 
+    def test_resume_without_state_starts_default_mode(self):
+        self.run_hack("resume")
+        self.assertEqual(self.mode()[0], "zen")
+        self.assertEqual(self.mode()[2], "0")
+        self.assertIn("blocked.example", self.hosts.read_text())
+
+    def test_resume_preserves_live_mode_deadline_and_allowances(self):
+        self.run_hack("switch", "work", "5")
+        self.run_hack("allow", "blocked", "2")
+        original_mode = self.mode()
+        original_allow = (self.state / "allow.tsv").read_text()
+        self.hosts.write_text("127.0.0.1 localhost\n")
+        self.run_hack("resume")
+        self.assertEqual(self.mode(), original_mode)
+        self.assertEqual((self.state / "allow.tsv").read_text(), original_allow)
+        self.assertNotIn("blocked.example", self.hosts.read_text())
+
+    def test_resume_expired_mode_returns_to_default(self):
+        self.run_hack("switch", "work", "1")
+        self.run_hack("allow", "blocked")
+        mode, session, _ = self.mode()
+        (self.state / "mode.tsv").write_text(f"{mode}\t{session}\t{int(time.time()) - 1}\n")
+        self.run_hack("resume")
+        self.assertEqual(self.mode()[0], "zen")
+        self.assertEqual((self.state / "allow.tsv").read_text(), "")
+        self.assertIn("blocked.example", self.hosts.read_text())
+
+    def test_resume_recovers_worker_without_duplicates_or_new_allowance(self):
+        text = self.fixture.read_text()
+        start = text.index("spawn_mode_worker() {")
+        end = text.index("case $1 in", start)
+        self.fixture.write_text(text[:start] + text[end:])
+        self.run_hack("resume")
+        original_mode = self.mode()
+        name = "hackbrain_runtime_" + original_mode[1]
+        self.screens.append(name)
+        self.wait_for(lambda: self.apps.exists() and "discord" in self.apps.read_text())
+        self.run_hack("resume")
+        self.assertEqual(subprocess.run(["screen", "-ls"], capture_output=True,
+                         text=True).stdout.count(name), 1)
+        subprocess.run(["screen", "-S", name, "-X", "quit"], check=True, capture_output=True)
+        self.apps.write_text("")
+        self.run_hack("resume")
+        self.assertEqual(self.mode(), original_mode)
+        self.assertEqual((self.state / "allow.tsv").read_text(), "")
+        self.wait_for(lambda: "discord" in self.apps.read_text())
+
     def test_hosts_block_is_idempotent_and_clear_really_clears(self):
         self.run_hack("switch", "zen")
         content = self.hosts.read_text()
