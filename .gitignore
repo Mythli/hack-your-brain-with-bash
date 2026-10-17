@@ -4,3 +4,6 @@ hack.sh
 hack.sh
 .DS_Store
 .aider*
+
+.hack-state/
+__pycache__/

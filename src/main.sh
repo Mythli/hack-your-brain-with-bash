@@ -221,7 +221,11 @@ close_app() {
     log "looking for $app to close it asap"
 
     local own_pid=$$
-    local pids=$(pgrep -i -f "$app" | grep -v $own_pid)
+    # Match executable names/paths, not command arguments such as `hack allow slack`.
+    local pids
+    pids=$(ps -axo pid=,comm= | HACK_APP_NAME="$app" awk -v own="$own_pid" -v current="$BASHPID" '
+        { pid=$1; sub(/^[ \t]*[0-9]+[ \t]+/, "")
+          if (pid != own && pid != current && index(tolower($0), tolower(ENVIRON["HACK_APP_NAME"]))) print pid }')
 
     log "Closing ($pids)"
 
@@ -249,285 +253,7 @@ close_app() {
     fi
 }
 
-close_mode_apps() {
-        local mode_name=$1
-        local -n mode=$mode_name
-        local app
-        for app in ${mode[$2]}; do
-                close_app "$app"
-        done
-}
-
-suppress_mode_apps_cli() {
-        local mode_name=$1
-        while true; do
-                close_mode_apps "$mode_name" "suppressed_apps"
-                sleep 10
-        done
-}
-
-replace_in_markers() {
-    local file_path="$1"
-    local marker="$2"
-    local content="$3"
-    local start_marker="START ${marker}"
-    local end_marker="END ${marker}"
-
-    # Check if the file exists
-    if [ ! -f "$file_path" ]; then
-        echo "Error: File does not exist."
-        return 1
-    fi
-
-    local tmp_file
-    tmp_file=$(mktemp)
-    # Ensure temp file is removed on exit, interrupt, or termination
-    trap 'rm -f "$tmp_file"' EXIT INT TERM
-
-    local in_block=false
-    local start_marker_found=false
-
-    # Read the file line by line and write to temp file
-    while IFS= read -r line; do
-        if [[ $line == "$start_marker" ]]; then
-            in_block=true
-            start_marker_found=true
-            printf "%s\n" "$line" >> "$tmp_file"
-            # content may be empty, and if not, it should have its own newlines.
-            if [ -n "$content" ]; then
-                # The content already contains newlines for each entry.
-                # We print it as is.
-                printf "%s" "$content" >> "$tmp_file"
-            fi
-        elif [[ $line == "$end_marker" ]]; then
-            in_block=false
-            printf "%s\n" "$line" >> "$tmp_file"
-        else
-            if ! $in_block; then
-                printf "%s\n" "$line" >> "$tmp_file"
-            fi
-        fi
-    done < "$file_path"
-
-    # If markers were not found, append the whole block to the temp file.
-    if ! $start_marker_found; then
-        # Ensure there's a newline before appending the block if file doesn't end with one
-        if [ -s "$file_path" ] && [ "$(tail -c1 "$file_path")" ]; then
-            printf "\n" >> "$tmp_file"
-        fi
-        printf "%s\n" "$start_marker" >> "$tmp_file"
-        if [ -n "$content" ]; then
-            printf "%s" "$content" >> "$tmp_file"
-        fi
-        printf "%s\n" "$end_marker" >> "$tmp_file"
-    fi
-
-    # Overwrite the original file with the temp file.
-    cat "$tmp_file" > "$file_path"
-
-    # Clean up trap and remove temp file
-    trap - EXIT INT TERM
-    rm -f "$tmp_file"
-}
-
-set_mode_hosts() {
-        local mode_name=$1
-        local -n mode=$mode_name
-        local hosts_content
-
-        # Build the content for the PRIME section of the hosts file more efficiently
-        hosts_content=$(for host in ${mode[hosts]}; do
-                echo "0.0.0.0 $host"
-        done)
-
-        # Call replace_in_markers with the new content
-        replace_in_markers "/etc/hosts" "PRIME_HOSTS" "$hosts_content"
-}
-
-# Declare global variables
-suppress_events=false
-should_hash=""
-
-suppress_mode_hosts_cli() {
-    local mode_name=$1
-
-    set_mode_hosts "$mode_name"
-
-    # should_hash=$(md5sum /etc/hosts | awk '{print $1}')
-
-    # fswatch -0 /etc/hosts | while read -d "" event; do
-    #     if [ "$suppress_events" = true ]; then
-    #         # Skip handling the event if suppression is active
-    #         continue
-    #     fi
-
-    #     # Calculate the current hash of the file
-    #     local current_hash
-    #     current_hash=$(md5sum /etc/hosts | awk '{print $1}')
-
-    #     echo "${current_hash} VS (SHOULD) ${should_hash}"
-
-    #     # Check if the hash is the same as the last recorded hash
-    #     if [ "$current_hash" = "$should_hash" ]; then
-    #         echo "No changes detected in /etc/hosts. Skipping."
-    #         continue
-    #     fi
-
-    #     echo "Detected change in /etc/hosts. Hash: $current_hash"
-
-    #     # Suppress further events while making changes
-    #     suppress_events=true
-    #     set_mode_hosts "$mode_name"
-    #     suppress_events=false
-    # done
-}
-
-spawn_suppress_mode_apps() {
-        log "spawn_suppress_mode_apps"
-
-        local mode_name=$1
-        # Start a background process using screen to suppress hosts for the given mode
-        screen -dmS "hackbrain___suppress_apps_$mode_name" bash -c "$script_path suppress_mode_apps $mode_name"
-}
-
-spawn_suppress_mode_hosts() {
-        local mode_name=$1
-
-        set_mode_hosts "$mode_name"
-        screen -dmS "hackbrain___suppress_hosts$mode_name" bash -c "$script_path suppress_mode_hosts $mode_name"
-}
-
-create_random_file() {
-    local file_name="ids"
-    # Generate a random value
-    local random_value=$RANDOM
-
-    # Create the file with the random value
-    echo "$random_value" > "$script_path/$file_name"
-
-    # Print a success message
-    echo "File created at $script_path/$file_name with random value: $random_value"
-}
-
-execute_mode() {
-        log "execute_mode $1"
-
-        local mode_name=$1
-        local -n mode=$mode_name
-        reset_modes
-
-
-
-        log "execute_mode close_mode_apps"
-        close_mode_apps "$mode_name" "closed_apps"
-
-        if [ -n "${mode[suppressed_apps]}" ]; then
-                spawn_suppress_mode_apps "$mode_name"
-                log "spawned spawn_suppress_mode_apps"
-        fi
-        if [ -n "${mode[hosts]}" ]; then
-                spawn_suppress_mode_hosts "$mode_name"
-                log "spawned spawn_suppress_mode_hosts"
-        fi
-}
-
-reset_modes() {
-        # Kill all processes
-        close_app "$script_path"
-        close_app "hackbrain___"
-}
-
-# Function to list all available modes
-list_modes_cli() {
-        echo "Available modes:"
-        for mode_name in "${modes[@]}"; do
-                echo "- $mode_name"
-        done
-}
-
-# Function to print a specific mode
-print_mode_cli() {
-        local mode_name=$1
-        local -n mode_ref=$mode_name # Use a name reference to the associative array
-        if declare -p mode_ref &> /dev/null; then
-                print_mode "$mode_name"
-        else
-                echo "Mode '$mode_name' does not exist."
-        fi
-}
-
-spawn_command_in_minutes() {
-    local minutes=$1
-    local command=$2
-    local end_time=$(( $(date +%s) + minutes * 60 ))
-
-    log "Executing $command in $minutes minutes."
-
-    # Start a background process using screen to execute the command after the delay
-    screen -dmS "hackbrain___delayed_command" bash -c " \
-    while [ \$(date +%s) -lt $end_time ]; do \
-        sleep 10; \
-    done; \
-    $command"
-}
-
-spawn_switch_to_default_mode_in_minutes() {
-    local current_mode=$1
-    local minutes=$2
-
-    # Check if we are already in the default mode, do nothing if true
-    if [ "$current_mode" = "$default_mode" ]; then
-        log "spawn_switch_to_default_mode_in_minutes we are in default mode so we are doing nothing here"
-        return
-    fi
-
-    spawn_command_in_minutes "$minutes" "$script_path switch_to_default_mode"
-}
-
-switch_to_default_mode_cli() {
-        log "switch_to_default_mode_cli switching to $default_mode"
-        execute_mode $default_mode
-}
-
-# Function to switch to a specific mode
-switch_mode() {
-    # TODO: fix bug in the code for normalisation where -1 is considered to be smaller than the max duration but is actually higher because we consider it to mean forever
-    local mode_name=${1:-$default_mode}
-    local -n mode_ref=$mode_name
-    local duration=${2:-${mode_ref[default_duration]}}
-
-    if declare -p mode_ref &> /dev/null; then
-        # Normalize the duration
-       if [[ $duration -gt ${mode_ref[max_duration]} ]] || [[ $duration -eq -1 ]]; then
-           duration=${mode_ref[max_duration]}
-       fi
-
-        if [[ $duration -eq -1 ]] || [[ $duration -gt 0 ]]; then
-            if execute_function_string "${mode_ref[challenges]}"; then
-                execute_mode $mode_name
-
-                if [[ $duration -eq -1 ]]; then
-                    echo "Switched to $mode_name mode indefinitely..."
-                else
-                    echo "Switched to $mode_name mode for $duration minutes..."
-                    spawn_switch_to_default_mode_in_minutes $mode_name $duration
-                fi
-            else
-                echo "Challenges execution failed. Mode switch aborted."
-            fi
-        else
-            echo "Invalid duration. Please specify a duration of -1 or between 1 and ${mode_ref[max_duration]} minutes."
-        fi
-    else
-        echo "Mode '$mode_name' does not exist."
-    fi
-}
-
-switch_mode_cli() {
-        local mode_name=$1
-        local duration=$2
-        switch_mode "$mode_name" "$duration"
-}
+source "$script_dir/src/runtime.sh"
 
 # Function to edit the script
 edit_script_cli() {
@@ -547,15 +273,9 @@ edit_script_cli() {
         echo "No suitable editor found. Please install one of the following: ${editors[*]}"
 }
 
-test_cli() {
-        echo "127.0.0.1 localhost" > /etc/hosts
-        set_mode_hosts "clear"
-        cat /etc/hosts
-}
-
 test_system() {
-  if [ "${BASH_VERSINFO:-0}" -lt 4 ]; then
-      echo "Bash version 4 or higher is required."
+  if (( BASH_VERSINFO[0] < 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 3) )); then
+      echo "Bash version 4.3 or higher is required."
       exit 1
   fi
 }
@@ -613,11 +333,15 @@ main() {
         edit)
             edit_script_cli "$2"
             ;;
-        suppress_mode_apps)
-            suppress_mode_apps_cli "$2"
+        allow)
+            shift
+            allow_cli "$@"
             ;;
-        suppress_mode_hosts)
-            suppress_mode_hosts_cli "$2"
+        status)
+            status_cli
+            ;;
+        enforce_mode)
+            enforce_mode_cli "$2" "$3"
             ;;
         switch_to_default_mode)
             switch_to_default_mode_cli
@@ -627,9 +351,11 @@ main() {
             ;;
         *)
             echo "Invalid command: $command"
-            echo "Usage: $0 {switch|list|print|edit} [options]"
+            echo "Usage: $0 {switch|allow|status|list|print|edit} [options]"
             echo "Commands:"
             echo "  switch [mode_name] [duration] - Switch to a specific mode with an optional duration."
+            echo "  allow <substring> [minutes] - Temporarily allow matching blocked hosts/apps."
+            echo "  status - Show the active mode and temporary allowances."
             echo "  list - List all available modes."
             echo "  print [mode_name] - Print the configuration of a specific mode."
             echo "  edit [editor] - hack the script using a text editor"

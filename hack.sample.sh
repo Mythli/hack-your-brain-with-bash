@@ -4,6 +4,13 @@ declare -g script_path=$(realpath "$0")
 declare -g script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 declare -g log_file="${script_dir}/.prime.debug.log"
 
+################## TEMPORARY ALLOW SETTINGS ##################
+# `hack allow <substring> [minutes]` expires at the deadline or a mode switch.
+# Matches host/app entries using case-insensitive literal substring matching.
+allow_default_duration=30
+allow_max_duration=60
+allow_challenges="addition3 addition3 addition3"
+
 ################## DEFINE YOUR MODES HERE ##################
 # Modes are predefined sets of configurations that determine the behavior of the script when activated.
 # Each mode is an associative array with the following keys:
@@ -16,7 +23,7 @@ declare -g log_file="${script_dir}/.prime.debug.log"
 #
 # The default_mode is the mode that the system will revert to after a specified duration or when manually triggered.
 
-declare -g  modes=("clear" "work" "zen", "news")
+declare -g  modes=("clear" "work" "zen" "news")
 declare -g default_mode="zen"
 
 declare -gA clear=(
@@ -27,7 +34,7 @@ declare -gA clear=(
         [suppressed_apps]=""
         [challenges]=""
         [closed_apps]="chrome.app"
-        [challenges]="mantra2 pushups addition4 plank"
+        [challenges]="addition3 addition3 addition3"
 )
 
 declare -gA news=(
@@ -36,7 +43,7 @@ declare -gA news=(
         [closed_apps]="${clear[closed_apps]}"
         [hosts]="$(cat "$script_dir/hosts/porn") app.tandem.net tinder.com etl.tindersparks.com"
         [suppressed_apps]=""
-        [challenges]="mantra2 addition3 pushups"
+        [challenges]="addition3 addition3 addition3"
 #        [challenges]="addition1"
 )
 
